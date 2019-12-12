@@ -1,6 +1,8 @@
 # docker-compose-elk
 
-Local ELK stack to use with docker-compose
+Local ELK stack to use with docker-compose.
+
+I created this project to explore the parent-child paradigm as shown in the documentation: https://www.elastic.co/guide/en/elasticsearch/reference/current/parent-join.html
 
 ## Docker Compose reference
 
