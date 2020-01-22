@@ -73,7 +73,7 @@ GET /visite/_search
   "query": {
       "has_child": {
         "type": "visita",
-        "min_children": 1, "max_children": 10, 
+        "min_children": 1, "max_children": 10,
         "query": { "match_all": {} },
         "inner_hits": {}
       }
