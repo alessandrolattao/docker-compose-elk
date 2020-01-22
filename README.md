@@ -19,3 +19,64 @@ I created this project to explore the parent-child paradigm as shown in the docu
 ## Kibana configuration
 
 <https://www.elastic.co/guide/en/kibana/7.5/docker.html>
+
+## Effettuare query
+
+### Ottenere tutti i dati
+
+```json
+GET /visite/_search
+{
+  "query": {
+        "match_all": {}
+    }
+}
+```
+
+### Ottenere tutte le visite
+
+```json
+GET /visite/_search
+{
+    "query": {
+        "has_parent" : {
+            "parent_type" : "dispositivo",
+            "query" : {
+              "match_all": {}
+            }
+        }
+    }
+}
+```
+
+### Ottenere tutti i dispositivi che hanno visite
+
+```json
+GET /visite/_search
+{
+    "query": {
+        "has_child": {
+            "type" : "visita",
+            "query" : {
+              "match_all": {}
+            }
+        }
+    }
+}
+```
+
+### Ottenere tutti i dispositivi che hanno visite e le visite
+
+```json
+GET /visite/_search
+{
+  "query": {
+      "has_child": {
+        "type": "visita",
+        "min_children": 1, "max_children": 10, 
+        "query": { "match_all": {} },
+        "inner_hits": {}
+      }
+  }
+}
+```
