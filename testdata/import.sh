@@ -16,102 +16,72 @@
 # A parent/child relation can be defined as follows:
 
 
-curl -X POST "localhost:9200/visite/_delete_by_query?pretty" -H 'Content-Type: application/json' -d'
-{
-    "query": {
-        "match_all": {}
-    }
-}
-'
+# curl -X POST "localhost:9200/visits/_delete_by_query?pretty" -H 'Content-Type: application/json' -d'
+# {
+#     "query": {
+#         "match_all": {}
+#     }
+# }
+# '
+# curl -X DELETE "localhost:9200/visits?pretty" -H 'Content-Type: application/json'
+# curl -X PUT "localhost:9200/visits?pretty" -H 'Content-Type: application/json' -d'
+# {
+#     "mappings": {
+#         "properties": {
+#             "do_visit": {
+#                 "type": "join",
+#                 "relations": {
+#                     "device": "visit"
+#                 }
+#             },
+#             "@timestamp": {
+#                 "type": "date",
+#                 "format": "epoch_millis"
+#             }
+#         }
+#     }
+# }
+# '
 
-curl -X DELETE "localhost:9200/visite?pretty" -H 'Content-Type: application/json'
-
-curl -X PUT "localhost:9200/visite?pretty" -H 'Content-Type: application/json' -d'
-{
-    "mappings": {
-        "properties": {
-            "effettua": {
-                "type": "join",
-                "relations": {
-                    "dispositivo": "visita"
-                }
-            },
-            "@timestamp": {
-                "type": "date",
-                "format": "epoch_millis"
-            }
-        }
-    }
-}
-'
-
-# To index a document with a join,
-# the name of the relation and the optional parent of the document must be provided in the source.
-# For instance the following example creates two parent documents in the question context:
+# Create a device
 
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-refresh.html
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html
 
-curl -X PUT "localhost:9200/visite/_doc/dispositivo1?refresh&pretty" -H 'Content-Type: application/json' -d'
+millepoch=$(( $(date '+%s%N') / 1000000))
+device_id=$(echo -n "$millepoch" | md5sum | awk '{print $1}')
+description=$(curl -s https://baconipsum.com/api/?type=meat-and-filler | jq '.[1]')
+
+curl -X PUT "localhost:9200/visits/_doc/$device_id?refresh&pretty" -H 'Content-Type: application/json' -d'
 {
-    "id_dispositivo": "dispositivo1",
-    "descrizione": "dispositivo bellissimo rosso e potente",
-    "@timestamp": 1579720909839,
-    "effettua": {
-        "name": "dispositivo"
-    }
-}
-'
-curl -X PUT "localhost:9200/visite/_doc/dispositivo2?refresh&pretty" -H 'Content-Type: application/json' -d'
-{
-    "id_dispositivo": "dispositivo2",
-    "descrizione": "carrozzone schifoso verde metallizzato",
-    "@timestamp": 1579720909839,
-    "effettua": {
-        "name": "dispositivo"
-    }
-}
-'
-curl -X PUT "localhost:9200/visite/_doc/dispositivo3?refresh&pretty" -H 'Content-Type: application/json' -d'
-{
-    "id_dispositivo": "dispositivo3",
-    "descrizione": "dispositivo rosa schic!",
-    "@timestamp": 1579720909839,
-    "effettua": {
-        "name": "dispositivo"
+    "device_id": "'"$device_id"'",
+    "description": '"$description"',
+    "@timestamp": '"$millepoch"',
+    "do_visit": {
+        "name": "device"
     }
 }
 '
 
-# The following examples shows how to index two child documents:
+for i in $(seq 1 $(( ( RANDOM % 20 )  + 1 ))); do
 
-curl -X PUT "localhost:9200/visite/_doc/visita1?routing=1&refresh&pretty" -H 'Content-Type: application/json' -d'
+echo "Generating $i visit..."
+sleep "$(seq 0 .01 3 | shuf | head -n1)"
+
+millepoch=$(( $(date '+%s%N') / 1000000))
+visit_id=$(echo -n "$millepoch" | md5sum | awk '{print $1}')
+
+
+curl -X PUT "localhost:9200/visits/_doc/$visit_id?routing=1&refresh&pretty" -H 'Content-Type: application/json' -d'
 {
-    "id_visita": "visita1",
-    "@timestamp": 1579720909839,
-    "effettua": {
-        "name": "visita",
-        "parent": "dispositivo1"
+    "visit_id": "'"$visit_id"'",
+    "@timestamp": '"$millepoch"',
+    "url": "/page_num/'"$i"'",
+    "do_visit": {
+        "name": "visit",
+        "parent": "'"$device_id"'"
     }
 }
 '
-curl -X PUT "localhost:9200/visite/_doc/visita2?routing=1&refresh&pretty" -H 'Content-Type: application/json' -d'
-{
-    "id_visita": "visita2",
-    "@timestamp": 1579720909839,
-    "effettua": {
-        "name": "visita",
-        "parent": "dispositivo1"
-    }
-}
-'
-curl -X PUT "localhost:9200/visite/_doc/visita3?routing=1&refresh&pretty" -H 'Content-Type: application/json' -d'
-{
-    "id_visita": "visita3",
-    "@timestamp": 1579720909839,
-    "effettua": {
-        "name": "visita",
-        "parent": "dispositivo2"
-    }
-}
-'
+
+done

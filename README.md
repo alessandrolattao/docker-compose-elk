@@ -22,10 +22,10 @@ I created this project to explore the parent-child paradigm as shown in the docu
 
 ## Effettuare query
 
-### Ottenere tutti i dati
+### Get all entries
 
 ```json
-GET /visite/_search
+GET /visits/_search
 {
   "query": {
         "match_all": {}
@@ -33,14 +33,14 @@ GET /visite/_search
 }
 ```
 
-### Ottenere tutte le visite
+### Get all visits
 
 ```json
-GET /visite/_search
+GET /visits/_search
 {
     "query": {
         "has_parent" : {
-            "parent_type" : "dispositivo",
+            "parent_type" : "device",
             "query" : {
               "match_all": {}
             }
@@ -49,14 +49,14 @@ GET /visite/_search
 }
 ```
 
-### Ottenere tutti i dispositivi che hanno visite
+### Get devices that has visits
 
 ```json
-GET /visite/_search
+GET /visits/_search
 {
     "query": {
         "has_child": {
-            "type" : "visita",
+            "type" : "visits",
             "query" : {
               "match_all": {}
             }
@@ -65,14 +65,14 @@ GET /visite/_search
 }
 ```
 
-### Ottenere tutti i dispositivi che hanno visite e le visite
+### Get all devices that has visits and visita
 
 ```json
-GET /visite/_search
+GET /visits/_search
 {
   "query": {
       "has_child": {
-        "type": "visita",
+        "type": "visit",
         "min_children": 1, "max_children": 10,
         "query": { "match_all": {} },
         "inner_hits": {}
