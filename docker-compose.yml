@@ -19,14 +19,14 @@ services:
     networks:
       - esnet
     volumes:
-      - esdata:/usr/share/elasticsearch/data
+      - "./esdata:/usr/share/elasticsearch/data"
   logstash:
     image: docker.elastic.co/logstash/logstash:7.5.0
     container_name: logstash
     networks:
       - esnet
     volumes:
-      - lspipeline:/usr/share/logstash/pipeline
+      - "./lspipeline:/usr/share/logstash/pipeline"
   kibana:
     image: docker.elastic.co/kibana/kibana:7.5.0
     container_name: kibana
@@ -34,12 +34,6 @@ services:
       - 80:5601
     networks:
       - esnet
-
-volumes:
-  esdata:
-    driver: local
-  lspipeline:
-    driver: local
 
 networks:
   esnet:
