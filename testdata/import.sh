@@ -24,27 +24,28 @@
 # }
 # '
 # curl -X DELETE "localhost:9200/visits?pretty" -H 'Content-Type: application/json'
-# curl -X PUT "localhost:9200/visits?pretty" -H 'Content-Type: application/json' -d'
-# {
-#     "mappings": {
-#         "properties": {
-#             "do_visit": {
-#                 "type": "join",
-#                 "relations": {
-#                     "device": "visit"
-#                 }
-#             },
-#             "@timestamp": {
-#                 "type": "date",
-#                 "format": "epoch_millis"
-#             }
-#         }
-#     }
-# }
-# '
 
-# Create a device
+# Create the index
+curl -X PUT "localhost:9200/visits?pretty" -H 'Content-Type: application/json' -d'
+{
+    "mappings": {
+        "properties": {
+            "do_visit": {
+                "type": "join",
+                "relations": {
+                    "device": "visit"
+                }
+            },
+            "@timestamp": {
+                "type": "date",
+                "format": "epoch_millis"
+            }
+        }
+    }
+}
+'
 
+# Create one device data
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-refresh.html
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html
 
@@ -63,14 +64,14 @@ curl -X PUT "localhost:9200/visits/_doc/$device_id?refresh&pretty" -H 'Content-T
 }
 '
 
+# Create N random visits for the device
 for i in $(seq 1 $(( ( RANDOM % 20 )  + 1 ))); do
 
-echo "Generating $i visit..."
-sleep "$(seq 0 .01 3 | shuf | head -n1)"
+    echo "Generating $i visit..."
+    sleep "$(seq 0 .01 3 | shuf | head -n1)"
 
-millepoch=$(( $(date '+%s%N') / 1000000))
-visit_id=$(echo -n "$millepoch" | md5sum | awk '{print $1}')
-
+    millepoch=$(( $(date '+%s%N') / 1000000))
+    visit_id=$(echo -n "$millepoch" | md5sum | awk '{print $1}')
 
 curl -X PUT "localhost:9200/visits/_doc/$visit_id?routing=1&refresh&pretty" -H 'Content-Type: application/json' -d'
 {
@@ -83,5 +84,4 @@ curl -X PUT "localhost:9200/visits/_doc/$visit_id?routing=1&refresh&pretty" -H '
     }
 }
 '
-
 done
